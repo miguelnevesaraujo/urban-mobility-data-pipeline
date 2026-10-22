@@ -1,0 +1,66 @@
+name: urban-mobility
+
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: mobility-postgres
+
+    environment:
+      POSTGRES_USER: mobility
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: mobility
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mobility -d mobility"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0
+    container_name: mobility-azurite
+
+    command: >
+      azurite-blob
+      --blobHost 0.0.0.0
+      --location /data
+
+    ports:
+      - "127.0.0.1:10000:10000"
+
+    volumes:
+      - azurite_data:/data
+
+    restart: unless-stopped
+
+  collector:
+    build:
+      context: ..
+      dockerfile: Dockerfile.collector
+
+    container_name: mobility-collector
+
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: ${AZURE_STORAGE_CONNECTION_STRING_DOCKER}
+
+    volumes:
+      - ../data:/app/data
+
+    depends_on:
+      - azurite
+
+    restart: unless-stopped
+
+
+volumes:
+  postgres_data:
+  azurite_data:
