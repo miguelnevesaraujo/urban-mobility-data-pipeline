@@ -52,9 +52,9 @@ Data quality checks, incremental processing, and orchestration will be integrate
 - Implemented recurring snapshot collection with a 15-minute interval while Docker is running.
 - Integrated JSON snapshot storage with Azurite.
 - Implemented duplicate upload protection.
-- Processed **965,093 trip records** from a historical CSV using chunk-based processing.
-- Converted the records into compressed Parquet format.
-- Validated row counts and column structure between CSV and Parquet.
+- Processed 3,860,371 historical Citi Bike trip records from four CSV files.
+- Converted the datasets into compressed Parquet files using chunk-based processing.
+- Implemented structural validation and verified that all 3,860,371 records have non-null, unique ride IDs across all four Parquet files.
 - Documented initial data quality rules in `docs/data_contract.md`.
 
 ## Development Roadmap
