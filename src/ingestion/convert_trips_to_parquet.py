@@ -40,9 +40,7 @@ schema = pa.schema([
 ])
 
 with ZipFile(ZIP_PATH, "r") as archive:
-
     for part in range(1, 5):
-
         csv_name = next(
             name for name in archive.namelist()
             if name.endswith(f"part{part}.csv")
@@ -62,7 +60,6 @@ with ZipFile(ZIP_PATH, "r") as archive:
 
         try:
             with archive.open(csv_name) as file:
-
                 chunks = pd.read_csv(
                     file,
                     dtype={col: "string" for col in string_columns},

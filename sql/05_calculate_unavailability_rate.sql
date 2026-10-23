@@ -1,0 +1,36 @@
+WITH eligible_observations AS (
+    SELECT
+        s.station_id,
+        s.num_bikes_available,
+        s.collected_at_utc
+
+    FROM raw.station_status AS s
+
+    INNER JOIN raw.station_information AS i
+        ON s.station_id = i.station_id
+
+    WHERE s.is_installed = 1
+      AND s.is_renting = 1
+      AND i.capacity > 0
+      AND s.num_bikes_available IS NOT NULL
+      AND s.last_reported_unix IS NOT NULL
+      AND EXTRACT(EPOCH FROM s.collected_at_utc)
+          - s.last_reported_unix
+          BETWEEN 0 AND 900
+)
+
+SELECT
+    COUNT(*) AS eligible_observations,
+
+    COUNT(*) FILTER (
+        WHERE num_bikes_available = 0
+    ) AS zero_bike_observations,
+
+    ROUND(
+        100.0 * COUNT(*) FILTER (
+            WHERE num_bikes_available = 0
+        ) / NULLIF(COUNT(*), 0),
+        2
+    ) AS unavailability_rate_pct
+
+FROM eligible_observations;

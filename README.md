@@ -8,8 +8,6 @@ The project integrates historical trip records and station availability data fro
 
 The objective is to develop a reliable data pipeline covering data ingestion, storage, transformation, quality validation, orchestration, and analytical reporting.
 
-**Project Status:** In Development — Phase 2: Data Ingestion & Raw Data Layer.
-
 ## Business Objective
 
 **Which Citi Bike stations experience the highest bicycle unavailability rates, and during which hours does this occur most frequently?**
@@ -32,10 +30,10 @@ Source: https://citibikenyc.com/system-data
 | Docker & Docker Compose | Containerization and local infrastructure |
 | PostgreSQL | Data Warehouse |
 | Azurite | Local Azure Blob Storage emulation |
-| dbt | SQL transformations and data quality tests (planned) |
-| Apache Airflow | Pipeline orchestration (planned) |
-| GitHub Actions | Continuous Integration (planned) |
-| Streamlit | Analytical dashboard (planned) |
+| dbt | SQL transformations and data quality tests |
+| Apache Airflow | Pipeline orchestration |
+| GitHub Actions | Continuous Integration |
+| Streamlit | Analytical dashboard |
 
 ## Data Architecture
 
@@ -56,11 +54,18 @@ Data quality checks, incremental processing, and orchestration will be integrate
 - Converted the datasets into compressed Parquet files using chunk-based processing.
 - Implemented structural validation and verified that all 3,860,371 records have non-null, unique ride IDs across all four Parquet files.
 - Documented initial data quality rules in `docs/data_contract.md`.
+- Created PostgreSQL raw schemas and tables for station information and historical availability.
+- Implemented Python-based loading of Citi Bike station information using psycopg.
+- Loaded and validated 52,899 station availability records from 21 historical snapshots.
+- Implemented idempotent loading using PostgreSQL conflict handling.
+- Developed SQL queries to evaluate station availability, operational status, and data freshness.
+- Calculated an initial station unavailability rate of 4.71% across eligible observations.
+- Identified stations with the highest observed zero-bike rates, using a minimum sample threshold.
 
 ## Development Roadmap
 
-1. Project Setup & Architecture — Completed
-2. Data Ingestion & Raw Data Layer — In Progress
+1. Project Setup & Architecture
+2. Data Ingestion & Raw Data Layer
 3. Data Warehouse & dbt
 4. Incremental Processing & Data Quality
 5. Airflow & Pipeline Orchestration
@@ -70,8 +75,6 @@ Data quality checks, incremental processing, and orchestration will be integrate
 
 - [Data Contract](docs/data_contract.md)
 
-Additional architecture diagrams, technical decisions, testing results, and performance measurements will be added as the project progresses.
-
 ## Project Goal
 
-This project is being developed to demonstrate practical Data Engineering skills, including reliable data ingestion, data modeling, automation, data quality, and maintainable pipeline development.
+This project is being developed to demonstrate practical Data Engineering skills, including reliable data ingestion, data modeling, automation, data quality and maintainable pipeline development.

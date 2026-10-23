@@ -5,16 +5,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
 COLLECTOR = (
     PROJECT_ROOT
     / "src"
     / "ingestion"
     / "collect_station_snapshot.py"
 )
-
 INTERVAL_SECONDS = 15 * 60
-
 
 def run_collection():
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -34,7 +31,6 @@ def run_collection():
             f"Collection failed with exit code {error.returncode}.",
             flush=True
         )
-
 
 if __name__ == "__main__":
     print("Citi Bike Collector started.")
