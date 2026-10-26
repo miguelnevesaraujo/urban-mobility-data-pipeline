@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: stg_station_status
+    description: Historical Citi Bike station availability observations
+    columns:
+      - name: station_id
+        description: Unique identifier of the station
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_station_information')
+                field: station_id
+
+      - name: collected_at_utc
+        description: Timestamp when the snapshot was collected
+        data_tests:
+          - not_null
+
+      - name: station_reported_at_utc
+        description: Last update timestamp reported by the station
+        data_tests:
+          - not_null

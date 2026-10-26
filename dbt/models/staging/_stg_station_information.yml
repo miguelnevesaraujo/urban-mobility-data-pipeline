@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: stg_station_information
+    description: Cleaned Citi Bike station reference data
+
+    columns:
+      - name: station_id
+        description: Unique station identifier
+        data_tests:
+          - unique
+          - not_null
+
+      - name: station_name
+        description: Station name
+        data_tests:
+          - not_null

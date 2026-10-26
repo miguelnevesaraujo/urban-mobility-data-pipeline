@@ -1,0 +1,12 @@
+version: 2
+sources:
+  - name: citi_bike
+    description: Citi Bike source data loaded into PostgreSQL
+    schema: raw
+
+    tables:
+      - name: station_information
+        description: Current reference information for Citi Bike stations
+
+      - name: station_status
+        description: Historical Citi Bike station availability snapshots

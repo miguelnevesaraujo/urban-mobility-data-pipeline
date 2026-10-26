@@ -4,3 +4,5 @@ pyarrow
 azure-storage-blob
 python-dotenv
 psycopg[binary]
+dbt-core==1.12.6
+dbt-postgres==1.11.0

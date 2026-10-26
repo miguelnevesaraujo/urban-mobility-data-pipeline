@@ -1,0 +1,15 @@
+urban_mobility:
+  target: dev
+
+  outputs:
+    dev:
+      type: postgres
+      host: 127.0.0.1
+      port: 5432
+
+      user: mobility
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+
+      dbname: mobility
+      schema: dbt_mobility
+      threads: 2
