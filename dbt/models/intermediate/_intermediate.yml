@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: int_station_availability
+    description: >
+      Combines Citi Bike station reference information
+      with historical availability observations.
+      Applies operational status, station capacity,
+      and data freshness rules to identify observations
+      eligible for bicycle unavailability analysis.
+
+    columns:
+      - name: station_id
+        description: Unique station identifier
+        data_tests:
+          - not_null
+
+      - name: collected_at_utc
+        description: UTC timestamp when the snapshot was collected
+        data_tests:
+          - not_null
+
+      - name: station_name
+        description: Name of the Citi Bike station
+
+      - name: report_age_seconds
+        description: >
+          Difference in seconds between snapshot collection
+          and the station's last reported update.
+
+      - name: is_eligible
+        description: >
+          True when the station is installed, allows rentals,
+          has positive capacity, has a non-null bicycle count,
+          and its reported data is between 0 and 900 seconds old.
+        data_tests:
+          - not_null
+
+      - name: is_zero_bike
+        description: >
+          True when the station has zero available bicycles.
+          Can be null when bicycle availability is unknown.
