@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: mart_station_unavailability
+    description: >
+      Station-level bicycle unavailability metrics
+      calculated from eligible Citi Bike observations.
+
+    columns:
+      - name: station_id
+        description: Unique station identifier
+        data_tests:
+          - unique
+          - not_null
+
+      - name: eligible_snapshots
+        description: Number of eligible station observations
+        data_tests:
+          - not_null
+
+      - name: unavailability_rate_pct
+        description: Percentage of eligible observations with zero bikes
+        data_tests:
+          - not_null
+
+  - name: mart_hourly_unavailability
+    description: >
+      Bicycle unavailability metrics grouped by
+      local hour of day in New York City.
+
+    columns:
+      - name: hour_of_day
+        description: Local hour of day, ranging from 0 to 23
+        data_tests:
+          - unique
+          - not_null
+
+      - name: eligible_observations
+        description: Number of eligible observations during the hour
+        data_tests:
+          - not_null
+
+      - name: unavailability_rate_pct
+        description: Percentage of eligible observations with zero bikes
+        data_tests:
+          - not_null
