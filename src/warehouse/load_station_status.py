@@ -49,7 +49,27 @@ with psycopg.connect(
     password=DB_PASSWORD,
 ) as connection:
 
-    for file_number, file_path in enumerate(snapshot_files, 1):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT source_file
+            FROM raw.station_snapshot_loads;
+        """)
+
+        loaded_files = {
+            row[0] for row in cursor.fetchall()
+        }
+
+    pending_files = [
+        file_path
+        for file_path in snapshot_files
+        if file_path.relative_to(RAW_DIR).as_posix()
+        not in loaded_files
+    ]
+
+    print("Already loaded:", len(snapshot_files) - len(pending_files))
+    print("Pending snapshots:", len(pending_files))
+
+    for file_number, file_path in enumerate(pending_files, 1):
 
         with open(file_path, "r", encoding="utf-8") as file:
             snapshot = json.load(file)
@@ -82,11 +102,44 @@ with psycopg.connect(
 
         with connection.cursor() as cursor:
             cursor.executemany(insert_query, records)
+            expected_ids = [
+                str(station["station_id"])
+                for station in stations
+            ]
+            cursor.execute("""
+                SELECT station_id
+                FROM raw.station_status
+                WHERE source_file = %s;
+            """, (source_file,))
+
+            actual_ids = [
+                row[0] for row in cursor.fetchall()
+            ]
+            is_complete = (
+                len(expected_ids) > 0
+                and len(expected_ids) == len(set(expected_ids))
+                and len(expected_ids) == len(actual_ids)
+                and set(expected_ids) == set(actual_ids)
+            )
+
+            if not is_complete:
+                raise ValueError(
+                    f"Incomplete snapshot: {source_file}"
+                )
+
+            cursor.execute("""
+                INSERT INTO raw.station_snapshot_loads (
+                    source_file,
+                    expected_rows
+                )
+                VALUES (%s, %s)
+                ON CONFLICT (source_file) DO NOTHING;
+            """, (source_file, len(expected_ids)))
 
         connection.commit()
 
         print(
-            f"Snapshot {file_number}/{len(snapshot_files)} "
+            f"Snapshot {file_number}/{len(pending_files)} "
             f"| Stations: {len(records)}"
         )
 

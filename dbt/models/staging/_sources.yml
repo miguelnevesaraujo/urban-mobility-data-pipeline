@@ -10,3 +10,6 @@ sources:
 
       - name: station_status
         description: Historical Citi Bike station availability snapshots
+      
+      - name: station_snapshot_loads
+        description: Tracks successfully validated station status snapshot loads, including their expected number of station observations.

@@ -43,3 +43,33 @@ models:
         description: Percentage of eligible observations with zero bikes
         data_tests:
           - not_null
+  
+  - name: mart_station_data_quality
+    description: >
+      Summarizes station availability observations by
+      data quality and eligibility category. Provides
+      observation counts and percentages to support
+      data quality monitoring.
+
+    columns:
+      - name: quality_category
+        description: >
+          Classification of each observation based on
+          eligibility and data quality rules.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: observation_count
+        description: >
+          Number of observations assigned to the
+          corresponding quality category.
+        data_tests:
+          - not_null
+
+      - name: percentage_of_total
+        description: >
+          Percentage of all observations belonging
+          to the corresponding quality category.
+        data_tests:
+          - not_null

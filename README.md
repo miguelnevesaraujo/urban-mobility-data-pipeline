@@ -71,7 +71,7 @@ and dbt Core to organize, transform, document, and validate data.
 
 The transformation layer follows a modular architecture:
 
-Raw PostgreSQL Tables --> Staging Models --> Intermediate Model --> Analytical Marts
+Raw PostgreSQL Tables → Staging Models → Intermediate Model → Analytical Marts
 
 ### dbt Models
 
@@ -116,6 +116,33 @@ dbt provides automatically generated model documentation
 and a lineage graph illustrating the dependencies between
 raw sources, staging models, intermediate transformations
 and analytical marts.
+
+## Incremental Processing & Data Quality
+
+The pipeline supports incremental loading of station status snapshots into PostgreSQL, processing only new or incomplete loads.
+
+An ingestion ledger (`raw.station_snapshot_loads`) tracks completed snapshots. Idempotency is ensured through PostgreSQL transactions, preventing duplicates and supporting failure recovery.
+
+### Automated Data Quality
+
+dbt tests validate:
+- Data completeness and referential integrity
+- Valid station availability and operational values
+- Snapshot reconciliation and consistency between models
+
+Critical issues trigger errors, while non-critical missing data can generate warnings.
+
+### Data Quality Monitoring
+
+The `mart_station_data_quality` model monitors data eligibility and exclusion reasons, including stale reports and inactive stations.
+
+**Latest validation results:**
+- **294,879** observations processed
+- **97.16%** eligible observations
+- **5.68%** observed zero-bike rate
+- **6 dbt models and 30 automated tests** successfully executed
+
+Results reflect sampled observations rather than continuous station downtime.
 
 ## Development Roadmap
 
