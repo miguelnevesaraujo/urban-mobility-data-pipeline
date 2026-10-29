@@ -1,0 +1,26 @@
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+
+    image: urban-mobility-airflow:3.3.2-dbt
+    container_name: mobility-airflow
+
+    command: standalone
+
+    ports:
+      - "8081:8080"
+
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - ../airflow/runtime:/opt/airflow
+      - ../airflow/dags:/opt/airflow/dags
+      - ../src:/opt/urban-mobility/src:ro
+      - ../data/raw:/opt/urban-mobility/data/raw:ro
+      - ../dbt:/opt/urban-mobility/dbt

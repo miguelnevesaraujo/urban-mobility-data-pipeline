@@ -123,6 +123,26 @@ The pipeline supports incremental loading of station status snapshots into Postg
 
 An ingestion ledger (`raw.station_snapshot_loads`) tracks completed snapshots. Idempotency is ensured through PostgreSQL transactions, preventing duplicates and supporting failure recovery.
 
+## Pipeline Orchestration with Apache Airflow
+
+Apache Airflow orchestrates the pipeline through Docker, executing three dependent tasks:
+
+1. `load_station_information` — Updates station reference data.
+2. `load_station_status` — Incrementally loads new snapshots.
+3. `build_dbt_models` — Runs dbt transformations and data quality tests.
+
+### Scheduling & Reliability
+
+- **Hourly scheduling** using Cron
+- **Task dependencies** to ensure correct execution order
+- **Retries, timeouts, and failure logging** for error handling
+- **Idempotent ingestion** to prevent duplicate processing
+- **Monitoring** through the Airflow UI
+
+### Validation
+
+Successfully validated manual and scheduled executions, including 6 dbt models and 30 automated data tests.
+
 ### Automated Data Quality
 
 dbt tests validate:

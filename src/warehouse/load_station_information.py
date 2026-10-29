@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv(Path("infra/.env"))
 
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_HOST = os.getenv("POSTGRES_HOST", "127.0.0.1")
 
 GBFS_URL = "https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json"
 
@@ -77,7 +78,7 @@ WHERE (
 """
 
 with psycopg.connect(
-    host="127.0.0.1",
+    host=DB_HOST,
     port=5432,
     dbname="mobility",
     user="mobility",

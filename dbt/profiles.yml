@@ -4,7 +4,7 @@ urban_mobility:
   outputs:
     dev:
       type: postgres
-      host: 127.0.0.1
+      host: "{{ env_var('POSTGRES_HOST', '127.0.0.1') }}"
       port: 5432
 
       user: mobility

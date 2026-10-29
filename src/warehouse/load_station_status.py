@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv("infra/.env")
 
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_HOST = os.getenv("POSTGRES_HOST", "127.0.0.1")
 
 SNAPSHOT_DIR = Path("data/raw/gbfs/station_status")
 RAW_DIR = Path("data/raw")
@@ -42,7 +43,7 @@ if not snapshot_files:
 print("Snapshot files found:", len(snapshot_files))
 
 with psycopg.connect(
-    host="127.0.0.1",
+    host=DB_HOST,
     port=5432,
     dbname="mobility",
     user="mobility",

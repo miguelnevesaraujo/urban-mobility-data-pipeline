@@ -28,3 +28,6 @@ dbt/dbt_packages/
 # Operating system
 .DS_Store
 Thumbs.db
+
+# Airflow local runtime
+airflow/runtime/
