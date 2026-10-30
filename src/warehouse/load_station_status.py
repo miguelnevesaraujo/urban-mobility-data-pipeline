@@ -9,9 +9,15 @@ load_dotenv("infra/.env")
 
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 DB_HOST = os.getenv("POSTGRES_HOST", "127.0.0.1")
+DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+DB_NAME = os.getenv("POSTGRES_DB", "mobility")
 
-SNAPSHOT_DIR = Path("data/raw/gbfs/station_status")
-RAW_DIR = Path("data/raw")
+SNAPSHOT_DIR = Path(
+    os.getenv("STATION_SNAPSHOT_DIR", "data/raw/gbfs/station_status")
+)
+RAW_DIR = Path(
+    os.getenv("RAW_DATA_DIR", "data/raw")
+)
 
 if not DB_PASSWORD:
     raise ValueError("POSTGRES_PASSWORD not found.")
@@ -44,8 +50,8 @@ print("Snapshot files found:", len(snapshot_files))
 
 with psycopg.connect(
     host=DB_HOST,
-    port=5432,
-    dbname="mobility",
+    port=DB_PORT,
+    dbname=DB_NAME,
     user="mobility",
     password=DB_PASSWORD,
 ) as connection:

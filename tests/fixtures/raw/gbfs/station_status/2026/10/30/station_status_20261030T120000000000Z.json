@@ -1,0 +1,28 @@
+{
+  "collected_at_utc": "2026-10-30T12:00:00+00:00",
+  "source_url": "synthetic-test-fixture",
+  "payload": {
+    "data": {
+      "stations": [
+        {
+          "station_id": "test_station_001",
+          "num_bikes_available": 5,
+          "num_docks_available": 10,
+          "is_installed": 1,
+          "is_renting": 1,
+          "is_returning": 1,
+          "last_reported": 1793361600
+        },
+        {
+          "station_id": "test_station_002",
+          "num_bikes_available": 0,
+          "num_docks_available": 15,
+          "is_installed": 1,
+          "is_renting": 1,
+          "is_returning": 1,
+          "last_reported": 1793361600
+        }
+      ]
+    }
+  }
+}

@@ -76,15 +76,27 @@ PostgreSQL and dbt implement a **Raw → Staging → Intermediate → Marts** tr
 
 **Data quality:** 30 automated tests cover identifiers, uniqueness, referential integrity, operational values, snapshot reconciliation and model consistency. The data quality mart tracks eligible and excluded observations, including stale reports and inactive stations. dbt also provides model documentation and lineage.
 
-### Example Analytical Results
+### Key Findings
 
-In a previously analyzed snapshot sample:
+Based on **220 station snapshots collected between October 21–30, 2026**, covering 9 observed calendar dates:
 
-- **294,879** station observations were processed.
-- **97.16%** met the eligibility rules.
-- **5.68%** of eligible observations reported zero available bicycles.
+**Top 5 Stations by Unavailability Rate**
 
-These are **historical sample results, not live metrics**. Snapshot-based rates do not represent continuous station downtime or establish long-term trends.
+| Station | Unavailability Rate |
+|---|---:|
+| Grand Concourse & E Mosholu Pkwy S | 74.55% |
+| Valentine Ave & E 198 St | 68.18% |
+| E Mosholu Pkwy & Van Cortlandt Ave E | 68.18% |
+| Aqueduct Ave & North St | 66.82% |
+| University Ave & Macombs Rd | 64.09% |
+
+**Hourly Analysis**
+
+The highest observed unavailability occurred between **11:00 and 15:00 (New York Time)**, peaking at **12:00 (7.07%)**.
+
+**Business Insight:** These findings suggest potential priorities for station rebalancing, particularly at frequently empty stations and during midday hours.
+
+**Limitation:** Results are based on periodic snapshots over a limited observation period, not continuous downtime or long-term availability patterns.
 
 ## Pipeline Orchestration with Apache Airflow
 
@@ -190,6 +202,7 @@ The dashboard requires PostgreSQL and a successful Airflow pipeline execution to
 ## Documentation
 
 - [Data Contract](docs/data_contract.md)
+- [Architecture Decisions](docs/architecture-decisions.md)
 
 ## Development Roadmap
 

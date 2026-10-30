@@ -9,8 +9,23 @@ permissions:
 
 jobs:
   python-validation:
-    name: Python Syntax Validation
+    name: Python Validation & Integration Tests
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: mobility
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: mobility
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U mobility -d mobility"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -21,11 +36,31 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Initialize PostgreSQL test schema
+        env:
+          PGPASSWORD: test_password
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          for file in \
+            sql/01_create_raw_schema.sql \
+            sql/02_create_station_information.sql \
+            sql/03_create_station_status.sql \
+            sql/09_create_station_snapshot_loads.sql; do
+
+            psql -h 127.0.0.1 -p 55432 \
+              -U mobility -d mobility \
+              -v ON_ERROR_STOP=1 -f "$file"
+          done
+
       - name: Validate Python syntax
         run: python -m compileall -q src airflow/dags
 
       - name: Install test dependencies
-        run: python -m pip install pytest
+        run: python -m pip install pytest "psycopg[binary]" python-dotenv
 
-      - name: Run Python unit tests
+      - name: Run Python tests
+        env:
+          TEST_POSTGRES_PORT: "55432"
         run: python -m pytest -v tests/
