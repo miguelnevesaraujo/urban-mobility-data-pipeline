@@ -8,6 +8,7 @@ load_dotenv("infra/.env")
 
 CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 PARQUET_DIR = Path("data/bronze/trips/year=2026/month=04")
+CONTAINER_NAME = os.getenv("AZURE_BRONZE_CONTAINER", "bronze")
 
 if not CONNECTION_STRING:
     raise ValueError("Azure Storage connection string not found.")
@@ -17,7 +18,7 @@ blob_service = BlobServiceClient.from_connection_string(
     api_version="2023-11-03"
 )
 
-container = blob_service.get_container_client("bronze")
+container = blob_service.get_container_client(CONTAINER_NAME)
 parquet_files = sorted(PARQUET_DIR.glob("trips_part*.parquet"))
 
 if len(parquet_files) != 4:

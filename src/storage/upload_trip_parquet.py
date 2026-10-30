@@ -9,7 +9,7 @@ load_dotenv("infra/.env")
 CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 PARQUET_DIR = Path("data/bronze/trips/year=2026/month=04")
-CONTAINER_NAME = "bronze"
+CONTAINER_NAME = os.getenv("AZURE_BRONZE_CONTAINER", "bronze")
 
 if not CONNECTION_STRING:
     raise ValueError("Azure Storage connection string not found.")
@@ -65,4 +65,4 @@ for file_path in parquet_files:
 
     print("File size verified.")
 
-print("\nAll Parquet files are available in Azurite!")
+print("\nAll Parquet files are available in Blob Storage!")

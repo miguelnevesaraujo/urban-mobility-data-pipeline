@@ -67,7 +67,8 @@ blob_service = BlobServiceClient.from_connection_string(
     api_version="2023-11-03"
 )
 
-container = blob_service.get_container_client("raw")
+container_name = os.getenv("AZURE_RAW_CONTAINER", "raw")
+container = blob_service.get_container_client(container_name)
 
 try:
     container.create_container()
@@ -84,9 +85,9 @@ try:
     with open(output_path, "rb") as file:
         blob.upload_blob(file, overwrite=False)
 
-    print("Snapshot uploaded to Azurite successfully!")
+    print("Snapshot uploaded to Blob Storage successfully!")
 
 except ResourceExistsError:
-    print("Snapshot already exists in Azurite.")
+    print("Snapshot already exists in Blob Storage.")
 
 print("Blob:", blob_name)

@@ -17,6 +17,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+      # Initialize PostgreSQL schema and tables
+      - ../sql/01_create_raw_schema.sql:/docker-entrypoint-initdb.d/01_create_raw_schema.sql:ro
+      - ../sql/02_create_station_information.sql:/docker-entrypoint-initdb.d/02_create_station_information.sql:ro
+      - ../sql/03_create_station_status.sql:/docker-entrypoint-initdb.d/03_create_station_status.sql:ro
+      - ../sql/09_create_station_snapshot_loads.sql:/docker-entrypoint-initdb.d/09_create_station_snapshot_loads.sql:ro
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mobility -d mobility"]
       interval: 10s
