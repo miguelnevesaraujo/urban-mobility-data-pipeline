@@ -25,6 +25,9 @@ Source: [Citi Bike System Data](https://citibikenyc.com/system-data)
 | Apache Airflow | Workflow scheduling and orchestration |
 | Docker & Docker Compose | Local services and reproducible infrastructure |
 | Azure Blob Storage SDK & Azurite | Cloud-compatible object storage and local emulation |
+| Streamlit & Plotly | Interactive analytics dashboard |
+| pytest | Python unit testing |
+| GitHub Actions | Continuous Integration |
 
 ## Data Architecture
 
@@ -39,12 +42,13 @@ flowchart TD
     PG["PostgreSQL - Raw Tables"]
     DBT["dbt - Models & Tests"]
     MART["PostgreSQL - Analytics Marts"]
+    DASH["Streamlit Dashboard"]
     TRIPS["Historical Trip Files"]
     PQ["Parquet Files"]
     BRONZE["Azurite - Bronze Container"]
     AIR["Apache Airflow - Hourly DAG"]
 
-    API --> COL --> RAW --> LOAD --> PG --> DBT --> MART
+    API --> COL --> RAW --> LOAD --> PG --> DBT --> MART --> DASH 
     COL --> AZRAW
     API --> INFO --> PG
     TRIPS --> PQ --> BRONZE
@@ -102,6 +106,45 @@ The Azure Blob Storage SDK connects to **Azurite** for cost-free local developme
 
 All four Parquet files passed local-versus-blob SHA-256 verification. The code supports Azure Blob Storage connection configuration, but **deployment to Azure has not been performed**.
 
+## Analytics Dashboard — Streamlit
+
+An interactive Streamlit dashboard connects to PostgreSQL analytical marts to answer the project's business question.
+
+**Key Features:**
+- Availability KPIs and overall unavailability rate
+- Interactive Top N stations by unavailability rate
+- Hourly availability analysis using Plotly
+- Automated business insights and key findings
+- Data quality monitoring and observation coverage
+
+Results are based on sampled station snapshots, not continuous downtime.
+
+### Dashboard Preview
+
+![Citi Bike Availability Analytics](docs/images/dashboard-overview.png)
+
+<details>
+<summary><strong>Additional Dashboard Views</strong></summary>
+
+#### Hourly Analysis & Key Findings
+
+![Hourly Unavailability Analysis](docs/images/dashboard-hourly.png)
+
+#### Data Quality & Coverage
+
+![Data Quality Overview](docs/images/dashboard-data-quality.png)
+
+</details>
+
+## Continuous Integration — GitHub Actions
+
+GitHub Actions automatically validates the Python code on every push and pull request.
+
+- **Python 3.13** syntax validation
+- **pytest:** 4 automated unit tests for business metric calculations
+- **CI Validation:** Successfully executed on GitHub
+- **dbt:** 30 data quality tests executed separately during pipeline runs
+
 ## Setup & Execution
 
 **Prerequisites:** Docker Desktop and Git; Python 3.13 for running scripts locally.
@@ -127,7 +170,22 @@ All four Parquet files passed local-versus-blob SHA-256 verification. The code s
 
 4. Access **Airflow** at `http://localhost:8081`. The collector runs every 15 minutes; the Airflow pipeline is scheduled hourly.
 
-**Note:** PostgreSQL schema initialization (see `sql/`) and the historical Bronze upload are separate from the hourly DAG. This project runs locally with Azurite; no Azure subscription is required.
+**Note:** PostgreSQL tables are automatically initialized on first startup. Historical Bronze Parquet uploads are managed separately from the hourly Airflow DAG. The project runs locally with Azurite, without requiring an Azure subscription.
+
+### Analytics Dashboard
+
+Run the Streamlit dashboard locally:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m streamlit run src/dashboard/app.py
+```
+
+Access the dashboard at `http://localhost:8501`.
+
+The dashboard requires PostgreSQL and a successful Airflow pipeline execution to populate the dbt analytical models.
 
 ## Documentation
 
