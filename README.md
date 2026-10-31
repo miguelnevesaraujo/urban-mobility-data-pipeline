@@ -1,5 +1,7 @@
 # Urban Mobility Data Engineering Pipeline
 
+[![Data Pipeline CI](https://github.com/miguelnevesaraujo/urban-mobility-data-pipeline/actions/workflows/ci.yaml/badge.svg)](https://github.com/miguelnevesaraujo/urban-mobility-data-pipeline/actions/workflows/ci.yaml)
+
 An end-to-end **Data Engineering project** using **Python, Docker, PostgreSQL, dbt and Apache Airflow** to automate Citi Bike station data ingestion, processing, validation and analytics. Historical trip data is processed separately into Parquet files and stored in an Azure-compatible local data lake.
 
 ## Business Objective
@@ -26,7 +28,7 @@ Source: [Citi Bike System Data](https://citibikenyc.com/system-data)
 | Docker & Docker Compose | Local services and reproducible infrastructure |
 | Azure Blob Storage SDK & Azurite | Cloud-compatible object storage and local emulation |
 | Streamlit & Plotly | Interactive analytics dashboard |
-| pytest | Python unit testing |
+| pytest | Python unit and integration testing |
 | GitHub Actions | Continuous Integration |
 
 ## Data Architecture
@@ -62,7 +64,7 @@ The Airflow workflow processes **locally stored snapshots**; Azurite holds objec
 ## Data Ingestion & Incremental Processing
 
 - Collects GBFS station snapshots **every 15 minutes**, saving JSON locally and uploading it to the Raw container.
-- Updates station reference data and incrementally loads new or incomplete snapshots into PostgreSQL.
+- Updates station reference data and incrementally loads new or incomplete (snapshots whose load was interrupted are reprocessed on the next run) snapshots into PostgreSQL.
 - Uses the `raw.station_snapshot_loads` ledger and PostgreSQL transactions for **idempotency and recovery**.
 - Processes **3,860,371 historical trips** from four CSV files into compressed Parquet, validating non-null, unique ride IDs.
 
@@ -150,43 +152,63 @@ Results are based on sampled station snapshots, not continuous downtime.
 
 ## Continuous Integration — GitHub Actions
 
-GitHub Actions automatically validates the Python code on every push and pull request.
+GitHub Actions automatically validates the pipeline on every push and pull request.
 
-- **Python 3.13** syntax validation
-- **pytest:** 4 automated unit tests for business metric calculations
-- **CI Validation:** Successfully executed on GitHub
-- **dbt:** 30 data quality tests executed separately during pipeline runs
+- **Python 3.13:** Syntax validation
+- **pytest:** 5 automated tests (4 unit tests + 1 integration test)
+- **PostgreSQL:** Temporary database used during CI
+- **dbt:** 6 models and 30 data quality tests
+- **Test Data:** Synthetic data used for pipeline validation
+- **CI Status:** Successfully executed on GitHub
 
 ## Setup & Execution
 
-**Prerequisites:** Docker Desktop and Git; Python 3.13 for running scripts locally.
+**Prerequisites:** Docker Desktop, Git and Python 3.13 (for the local dashboard).
 
-1. Clone the repository:
+### 1. Clone and configure
 
-   ```powershell
-   git clone https://github.com/miguelnevesaraujo/urban-mobility-data-pipeline.git
-   cd urban-mobility-data-pipeline
-   ```
+```powershell
+git clone https://github.com/miguelnevesaraujo/urban-mobility-data-pipeline.git
+cd urban-mobility-data-pipeline
 
-2. Copy `infra/.env.example` to `infra/.env` and replace the placeholder values with working PostgreSQL and Azurite settings:
+Copy-Item infra/.env.example infra/.env
+```
 
-   ```powershell
-   Copy-Item infra/.env.example infra/.env
-   ```
+Edit `infra/.env` and replace `replace_with_local_password` with a password of your choice.
 
-3. Build and start the services:
+The example configuration includes working Azurite development connection strings. No Azure subscription is required.
 
-   ```powershell
-   docker compose --env-file infra/.env -f infra/compose.yaml -f infra/compose.airflow.yaml up -d --build
-   ```
+### 2. Start the infrastructure
 
-4. Access **Airflow** at `http://localhost:8081`. The collector runs every 15 minutes; the Airflow pipeline is scheduled hourly.
+```powershell
+docker compose --env-file infra/.env -f infra/compose.yaml -f infra/compose.airflow.yaml up -d --build
+```
 
-**Note:** PostgreSQL tables are automatically initialized on first startup. Historical Bronze Parquet uploads are managed separately from the hourly Airflow DAG. The project runs locally with Azurite, without requiring an Azure subscription.
+Verify the services:
 
-### Analytics Dashboard
+```powershell
+docker compose --env-file infra/.env -f infra/compose.yaml -f infra/compose.airflow.yaml ps
+```
 
-Run the Streamlit dashboard locally:
+The stack includes PostgreSQL, Azurite, a scheduled GBFS collector and Apache Airflow. PostgreSQL tables are initialized automatically on first startup.
+
+### 3. Run the data pipeline
+
+Open **Airflow** at http://localhost:8081.
+
+To retrieve the locally generated Airflow credentials:
+
+```powershell
+docker exec mobility-airflow cat /opt/airflow/simple_auth_manager_passwords.json.generated
+```
+
+Once the collector has saved its first station-status snapshot, trigger the `urban_mobility_pipeline` DAG from the Airflow UI.
+
+The DAG runs station reference ingestion, incremental snapshot loading and dbt transformations. It is also scheduled hourly.
+
+The collector fetches GBFS station-status data every 15 minutes independently of Airflow.
+
+### 4. Launch the analytics dashboard
 
 ```powershell
 python -m venv .venv
@@ -195,20 +217,32 @@ python -m pip install -r requirements.txt
 python -m streamlit run src/dashboard/app.py
 ```
 
-Access the dashboard at `http://localhost:8501`.
+Open **Streamlit** at http://localhost:8501.
 
-The dashboard requires PostgreSQL and a successful Airflow pipeline execution to populate the dbt analytical models.
+The dashboard reads the PostgreSQL analytical marts created by dbt. Run the Airflow pipeline successfully before expecting populated visualizations.
+
+**Notes:**
+- Local credentials remain in the untracked `infra/.env` file.
+- Historical trip data is stored separately as Bronze Parquet files in Azurite and is not yet part of the operational dbt marts.
+- The project runs locally with cloud-compatible storage, without deploying infrastructure to Azure.
 
 ## Documentation
 
 - [Data Contract](docs/data_contract.md)
 - [Architecture Decisions](docs/architecture-decisions.md)
 
-## Development Roadmap
+## Limitations & Next Steps
 
-- 1. Project Setup & Architecture
-- 2. Data Ingestion & Raw Data Layer
-- 3. Data Warehouse & dbt
-- 4. Incremental Processing & Data Quality
-- 5. Airflow & Pipeline Orchestration
-- 6. Cloud Integration & Portfolio
+### Current Limitations
+
+- **Local deployment:** The pipeline runs on Docker with Azurite, demonstrating cloud-compatible storage without an active Azure deployment.
+- **Historical trip data:** Citi Bike trip records are stored as Bronze Parquet files but are not yet integrated into the PostgreSQL/dbt analytical models.
+- **Snapshot-based availability:** Station availability metrics represent collected observations rather than continuous station downtime.
+- **Operational monitoring:** Airflow provides task execution logs and retries, but production-grade alerting and monitoring are not yet implemented.
+
+### Future Improvements
+
+- Integrate historical trip data into the analytical warehouse to explore relationships between trip demand and station availability.
+- Introduce automated operational alerts and pipeline health monitoring.
+- Deploy the infrastructure to a managed cloud environment.
+- Expand automated testing with additional data quality and edge-case scenarios.
